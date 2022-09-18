@@ -1,0 +1,22 @@
+{
+  "name": "botify",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./back-end/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "knex": "^2.2.0",
+    "mysql2": "^2.3.3",
+    "objection": "^3.0.1",
+    "sequelize": "^6.21.3",
+    "telegraf": "^3.38.0"
+  }
+}
