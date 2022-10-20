@@ -15,6 +15,9 @@ exports.updateGroups = async (botUpdates) => {
     if (!status) {
       throw "no new updates";
     } else if (status) {
+      /*NOTE: update doesn't seem to include owner id if admin added it to a group 
+      works only if the owner of the group adds it 
+      */
       const group_id = data[data.length - 1].my_chat_member.chat.id;
       const owner_id = data[data.length - 1]?.my_chat_member?.from.id;
       const group_name = data[data.length - 1].my_chat_member.chat.title;
@@ -28,22 +31,34 @@ exports.updateGroups = async (botUpdates) => {
       } else if (status === "member") {
         await Owner.query()
           .insert({ id: owner_id })
-          .catch(() => {});
+          .catch(() => {
+            console.log("skipping owner creation for existing owner");
+          });
 
-        groupAdded(owner_id, group_name);
+        if (
+          !data[data.length - 1]?.my_chat_member?.new_chat_member.user?.is_bot
+        ) {
+          console.log(
+            `bot added to this group: ${group_id} by this owner: ${owner_id} `
+          );
+          groupAdded(owner_id, group_name, group_id);
+        } else {
+          console.log(
+            `bot added to this group: ${group_id} by this admin: ${owner_id} `
+          );
+        }
         const group = await Group.query().where("tg_chat_id", group_id);
-        console.log(
-          `bot added to this group: ${group_id} by this owner: ${owner_id} `
-        );
         //relate and update update_id for existing groups
         if (group.length > 0) {
-          await Owner.relatedQuery("groups").for(owner_id).relate(group_id);
+          const relId = await Owner.relatedQuery("groups")
+            .for(owner_id)
+            .relate(group_id);
           await Group.query().where("tg_chat_id", group_id).patch({
             update_id: updateId,
           });
         } //create(id, update_id) and relate for new group
         else {
-          await Owner.relatedQuery("groups")
+          const relId = await Owner.relatedQuery("groups")
             .for(owner_id)
             .insert({ tg_chat_id: group_id, update_id: updateId });
         }
@@ -69,9 +84,7 @@ exports.updateGroups = async (botUpdates) => {
 
 //get groups the owner owns
 exports.getGroups = async (owner_id) => {
-  const groups = await owner.relatedQuery("groups").for(owner_id);
+  const groups = await Owner.relatedQuery("groups").for(owner_id);
   console.log(`groups that ${owner_id} is a part of are:`);
-  groups.forEach((el) => console.log(el));
-
   return groups;
 };

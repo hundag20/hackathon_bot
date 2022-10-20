@@ -5,14 +5,18 @@ class UserModel extends Model {
     return "users";
   }
 }
+
+const useFreeTrail = async (userId) => {
+  const user = await UserModel.query().findById(userId);
+  await UserModel.query().findById(userId).patch({
+    free_used: true,
+  });
+};
+
 const checkIfFreeUsed = async (userId) => {
   const user = await UserModel.query().findById(userId);
 
   if (user && user.free_used == false) {
-    //move User.useFree() to a diff function
-    // await UserModel.query().findById(userId).patch({
-    //   free_used: true,
-    // });
     return false;
   } else if (user && user.free_used == true) {
     return true;
@@ -22,4 +26,4 @@ const checkIfFreeUsed = async (userId) => {
   }
 };
 
-module.exports = { User: UserModel, checkIfFreeUsed };
+module.exports = { User: UserModel, checkIfFreeUsed, useFreeTrail };

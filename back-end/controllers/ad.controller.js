@@ -2,7 +2,7 @@ const Ad = require("../models/Ad.model");
 const Group = require("../models/Group.model");
 
 //create new ad
-(async () => {
+const createAd = async () => {
   const ads = await Ad.query().findById(2);
 
   console.log("ad id: ", ads?.id);
@@ -21,4 +21,4 @@ const Group = require("../models/Group.model");
   //group ids that the bot is subscribed to
 
   const yetNewAd = await newAd.$relatedQuery("groups").relate(groups);
-})();
+}
