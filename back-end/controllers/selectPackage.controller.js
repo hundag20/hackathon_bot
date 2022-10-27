@@ -6,7 +6,7 @@ const selectPackage = async (ctx) => {
       inline_keyboard: [
         [
           {
-            text: `Vie status`,
+            text: `View status`,
             callback_data: `view_status_${packId}`,
           },
         ],
@@ -19,7 +19,7 @@ const selectPackage = async (ctx) => {
         [
           {
             text: `Edit existing Ad`,
-            callback_data: `edit_ad_${packId}`,
+            callback_data: `select_ad_${packId}`,
           },
         ],
       ],

@@ -76,6 +76,11 @@ const postAd = async (ad, user_id) => {
           ],
         },
       });
+
+      //increment ad counter
+      await Ad.query().update({counter: ad.counter + 1}).where('id', '=', ad.id)
+      console.log("ad counter incremented");
+
     } catch (err) {
       console.log(err);
     }
@@ -140,11 +145,11 @@ const cronFunc = async (x) => {
 };
 
 //every 15 minutes
-const freeTrialJob = new CronJob("*/5 * * * * *", async function () {
+const freeTrialJob = new CronJob("* * * * * *", async function () {
   await cronFunc(1);
 });
 //every half hour
-const dailyJob = new CronJob("*/5 * * * * *", async function () {
+const dailyJob = new CronJob("*/30 * * * *", async function () {
   await cronFunc(2);
 });
 //every one hour
@@ -157,7 +162,7 @@ const monthlyJob = new CronJob("0 */1 * * *", async function () {
 });
 
 const job = () => {
-  // freeTrialJob.start();
+  freeTrialJob.start();
   // dailyJob.start();
   // weeklyJob.start();
   // monthlyJob.start();

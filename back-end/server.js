@@ -22,8 +22,9 @@ const {
   enterNewAd,
   newAd_Wizard,
 } = require("./controllers/enterNewAd.controller");
-const editAd = require("./controllers/editAd.controller");
-const Package = require("./models/Package.model");
+const { editAd, editAd_Wizard } = require("./controllers/editAd.controller");
+const viewStatus = require("./controllers/viewStatus.controller");
+const selectAd = require("./controllers/selectAd.controller");
 require("./controllers/adsPoster.controller")();
 dotenv.config({ path: "./config.env" });
 
@@ -48,7 +49,12 @@ bot.use((ctx, next) => {
   return next();
 });
 
-const stage = new Stage([createAd_Wizard, regGroup_Wizard, newAd_Wizard]);
+const stage = new Stage([
+  createAd_Wizard,
+  regGroup_Wizard,
+  newAd_Wizard,
+  editAd_Wizard,
+]);
 
 bot.use(session());
 bot.use(stage.middleware());
@@ -72,7 +78,10 @@ const newAdReg = new RegExp(/^add_ad/);
 bot.action(newAdReg, enterNewAd);
 const editAdReg = new RegExp(/^edit_ad/);
 bot.action(editAdReg, editAd);
-
+const viewSatusReg = new RegExp(/^view_status/);
+bot.action(viewSatusReg, viewStatus);
+const selectAdRef = new RegExp(/^select_ad/);
+bot.action(selectAdRef, selectAd);
 bot.launch();
 
 // Enable graceful stop

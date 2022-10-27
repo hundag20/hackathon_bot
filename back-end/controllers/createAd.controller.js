@@ -82,7 +82,7 @@ const savePackage = async (pkgObj, adObj) => {
   return package.id;
 };
 
-const chooseCat = async (ctx) => {
+const chooseCat = async (ctx, caller) => {
   const allGroups = await Group.query();
   let pharma = 0;
   ecom = 0;
@@ -97,8 +97,12 @@ const chooseCat = async (ctx) => {
     pharma: pharma,
     electronics: elec,
   };
+  const head =
+    caller === "edit"
+      ? ""
+      : `<b>Enter your Ad</b> (<i>you can enter more ads later</i>)\n\n`;
   ctx.replyWithHTML(
-    `<b>Enter your Ad</b> (<i>you can enter more ads later</i>)\n\n<b>Choose the appropriate category of groups for your Ad </b>
+    `${head}<b>Choose the appropriate category of groups for your Ad </b>
   👉🏿 1. ecommerce (${groupCatStats.ecommerce} groups)
   👉🏿 2. pharma (${groupCatStats.pharma} groups)
   👉🏿 3. electronics (${groupCatStats.electronics} groups)
@@ -150,37 +154,41 @@ const createAd_Wizard = new WizardScene(
   },
   //B. choose category
   async (ctx) => {
-    ctx.wizard.state.pkgData.poster_id = ctx.update.callback_query.from.id;
-    const data = ctx.update.callback_query?.data;
-    if (data) {
-      if (data == 1) {
-        const free_used = await checkIfFreeUsed(ctx.from.id);
-        if (free_used) {
-          ctx.replyWithHTML(
-            "<b>You have used your free trial!</b>",
-            Extra.HTML().markup((m) =>
-              m.inlineKeyboard([
-                m.callbackButton(`choose another package`, `1`),
-              ])
-            )
-          );
-          return ctx.wizard.back();
+    try {
+      ctx.wizard.state.pkgData.poster_id = ctx.update.callback_query.from.id;
+      const data = ctx.update.callback_query?.data;
+      if (data) {
+        if (data == 1) {
+          const free_used = await checkIfFreeUsed(ctx.from.id);
+          if (free_used) {
+            ctx.replyWithHTML(
+              "<b>You have used your free trial!</b>",
+              Extra.HTML().markup((m) =>
+                m.inlineKeyboard([
+                  m.callbackButton(`choose another package`, `1`),
+                ])
+              )
+            );
+            return ctx.wizard.back();
+          }
+        }
+        //x- weekly/monthly
+        //y- num of posts in a day
+        ctx.wizard.state.pkgData.schedule.x = data;
+        ctx.wizard.state.pkgData.schedule.y = DAILY_POSTS;
+
+        if (ctx.wizard.state.cursor.h) {
+          console.log("back");
+          await chooseCat(ctx);
+          ctx.wizard.steps[ctx.wizard.state.cursor.c](ctx);
+        } else {
+          ctx.wizard.state.cursor.b = ctx.wizard.cursor;
+          await chooseCat(ctx);
+          return ctx.wizard.next();
         }
       }
-      //x- weekly/monthly
-      //y- num of posts in a day
-      ctx.wizard.state.pkgData.schedule.x = data;
-      ctx.wizard.state.pkgData.schedule.y = DAILY_POSTS;
-
-      if (ctx.wizard.state.cursor.h) {
-        console.log("back");
-        await chooseCat(ctx);
-        ctx.wizard.steps[ctx.wizard.state.cursor.c](ctx);
-      } else {
-        ctx.wizard.state.cursor.b = ctx.wizard.cursor;
-        await chooseCat(ctx);
-        return ctx.wizard.next();
-      }
+    } catch (err) {
+      console.log(err);
     }
   },
   //C. enter title

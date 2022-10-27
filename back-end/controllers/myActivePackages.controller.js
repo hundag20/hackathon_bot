@@ -43,7 +43,8 @@ const myActivePackages = async (ctx) => {
       },
     ];
   });
-  console.log(buttons);
+  console.log("msg: ", msg);
+  msg = msg ? msg : "You have no active packages";
   ctx.telegram.sendMessage(user_id, msg, {
     parse_mode: "HTML",
     reply_markup: {
