@@ -26,7 +26,7 @@ const { editAd, editAd_Wizard } = require("./controllers/editAd.controller");
 const viewStatus = require("./controllers/viewStatus.controller");
 const selectAd = require("./controllers/selectAd.controller");
 require("./controllers/adsPoster.controller")();
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 //--setup
 const options = {
@@ -35,7 +35,7 @@ const options = {
   polling: true, // Reply via webhook
 };
 
-const TOKEN = "1277460191:AAHSqUZS3FMpOfmtFO1IAd-4OYP5yHBGz_c";
+const TOKEN = process.env.BOT_TOKEN;
 const telegram = new Telegram(TOKEN, [options]);
 const bot = new Telegraf(TOKEN);
 
