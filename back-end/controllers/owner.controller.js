@@ -2,8 +2,7 @@ const { default: axios } = require("axios");
 const Owner = require("../models/Owner.model");
 const Group = require("../models/Group.model");
 const { groupAdded, groupRemoved } = require("./regGroup.controller");
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
-const TOKEN = process.env.BOT_TOKEN;
+
 
 
 //add bot to groups on change
