@@ -3,7 +3,7 @@ const { Telegraf } = require("telegraf");
 const Stage = require("telegraf/stage");
 const session = require("telegraf/session");
 const dotenv = require("dotenv");
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // const app = require("./App");
 const { updateGroups } = require("./controllers/owner.controller");
 const {
@@ -30,7 +30,7 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 //--setup
 const options = {
-  agent: null, // https.Agent instance, allows custom proxy, certificate, keep alive, etc.
+  // agent: null, // https.Agent instance, allows custom proxy, certificate, keep alive, etc.
   webhookReply: false,
   polling: true, // Reply via webhook
 };
@@ -82,8 +82,7 @@ const viewSatusReg = new RegExp(/^view_status/);
 bot.action(viewSatusReg, viewStatus);
 const selectAdRef = new RegExp(/^select_ad/);
 bot.action(selectAdRef, selectAd);
-bot.launch();
-
+bot.launch()
 // Enable graceful stop
 // process.once("SIGINT", () => bot.stop("SIGINT"));
 // process.once("SIGTERM", () => bot.stop("SIGTERM"));
