@@ -155,7 +155,7 @@ const createAd_Wizard = new WizardScene(
   //B. choose category
   async (ctx) => {
     try {
-      ctx.wizard.state.pkgData.poster_id = ctx.update.callback_query.from.id;
+      ctx.wizard.state.pkgData.poster_id = ctx.update?.callback_query?.from?.id;
       const data = ctx.update.callback_query?.data;
       if (data) {
         if (data == 1) {

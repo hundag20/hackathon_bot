@@ -61,8 +61,8 @@ bot.use(stage.middleware());
 
 bot.start((ctx) => {
   ctx.reply(`Welcome
-  /createAd
-  /checkStatus
+  /TakeAquiz
+  /HaveAchat
   `);
 });
 bot.command("createAd", createAdController);
