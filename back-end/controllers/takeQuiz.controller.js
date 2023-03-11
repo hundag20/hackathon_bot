@@ -48,26 +48,103 @@ const loadQuestion = async (qId) => {
 const saveQuiz = async (quizData) => {
   //find score
   let score = 0;
+  //amount of time taken to complete quiz divded by 4 to be multiplied with each right answer
+  const timeCoefficient = quizData.timeTaken / 1000 / 4;
+  const report = { right: [], wrong: [] };
   const q1 = await Question.query().findById(quizData.quizObj.q1_id);
-  if (quizData.ans1 == q1.rightAnswer) score++;
+  if (quizData.ans1 == q1.rightAnswer) {
+    score =
+      score + score * timeCoefficient
+        ? score + score * timeCoefficient
+        : timeCoefficient;
+    report.right.push(0);
+  } else {
+    report.wrong.push(0);
+  }
   const q2 = await Question.query().findById(quizData.quizObj.q2_id);
-  if (quizData.ans2 == q2.rightAnswer) score++;
+  if (quizData.ans2 == q2.rightAnswer) {
+    score =
+      score + score * timeCoefficient
+        ? score + score * timeCoefficient
+        : timeCoefficient;
+    report.right.push(1);
+  } else {
+    report.wrong.push(1);
+  }
   const q3 = await Question.query().findById(quizData.quizObj.q3_id);
-  if (quizData.ans3 == q3.rightAnswer) score++;
+  if (quizData.ans3 == q3.rightAnswer) {
+    score =
+      score + score * timeCoefficient
+        ? score + score * timeCoefficient
+        : timeCoefficient;
+    report.right.push(2);
+  } else {
+    report.wrong.push(2);
+  }
   const q4 = await Question.query().findById(quizData.quizObj.q4_id);
-  if (quizData.ans4 == q4.rightAnswer) score++;
+  if (quizData.ans4 == q4.rightAnswer) {
+    score =
+      score + score * timeCoefficient
+        ? score + score * timeCoefficient
+        : timeCoefficient;
+    report.right.push(3);
+  } else {
+    report.wrong.push(3);
+  }
 
   //save to quizs_users
-  await QuizUser.query().insert({
+  const quizuser = await QuizUser.query().insert({
     user_id: quizData.userId,
     quiz_id: quizData.quizObj.id,
-    score,
+    score: Math.round(score * 100) / 100,
   });
   //update user points
   const user = await User.query().where({ telid: quizData.userId });
   await User.query().update({
     points: user[0].points + score,
   });
+  return { quizuser, report };
+};
+
+const loadStats = async (quizuser, report, quizData) => {
+  //average seconds taken for questions
+  const averageSeconds = quizData.timeTaken / 1000 / 4;
+  //load the how many'th player he is to play the game
+  const quizTakers = await QuizUser.query().where({
+    quiz_id: quizData.quizObj.id,
+  });
+  const nth = quizTakers.length;
+  //load his total score
+  const score = quizuser.score;
+  //load qids for answered and unanswered quests
+  const rightAndWrongs = { right: [], wrong: [] };
+  report.right.map((i) => {
+    rightAndWrongs.right.push(quizData.quizObj[`q${i + 1}_id`]);
+  });
+  report.wrong.map((i) => {
+    rightAndWrongs.wrong.push(quizData.quizObj[`q${i + 1}_id`]);
+  });
+  const stats = { averageSeconds, nth, score, rightAndWrongs };
+  return stats;
+};
+
+const generateStatsHtml = async (stats) => {
+  const allQuestions = await Question.query();
+  //load answered quests
+  let answeredQuestions = "";
+  for (qid of stats.rightAndWrongs.right) {
+    const quest = await Question.query().findById(qid);
+    answeredQuestions = answeredQuestions.concat(`✅ ${quest.question}\n`);
+  }
+  //load unanswered quests
+  let unAnsweredQuestions = "";
+  for (qid of stats.rightAndWrongs.wrong) {
+    const quest = await Question.query().findById(qid);
+    unAnsweredQuestions = unAnsweredQuestions.concat(`❌ ${quest.question}\n`);
+  }
+  const msg = `👉🏿 you are the #${stats.nth} player\n👉🏿 score: ${stats.rightAndWrongs.right.length}/4\n👉🏿 Average time taken for each question: ${stats.averageSeconds}s\n🎖 ${stats.score} Points added\n\n${answeredQuestions}\n${unAnsweredQuestions}
+    `;
+  return msg;
 };
 
 //MARK-- WIZARD_newAd
@@ -79,6 +156,7 @@ const takeQuiz_Wizard = new WizardScene(
     try {
       ctx.wizard.state.quizData = {};
       ctx.wizard.state.quizData.userId = ctx.update?.message?.from?.id;
+      ctx.wizard.state.quizData.initTime = new Date();
       const quiz = await loadQuiz(ctx.wizard.state.quizData.userId);
       ctx.wizard.state.quizData.quizObj = quiz;
       const firstQ = await loadQuestion(quiz.q1_id);
@@ -230,8 +308,21 @@ const takeQuiz_Wizard = new WizardScene(
     try {
       const ans = ctx.update?.callback_query?.data;
       ctx.wizard.state.quizData.ans4 = ans;
-      const quizUser = await saveQuiz(ctx.wizard.state.quizData);
-      //   const stats  = await loadStats(quizUser);
+      ctx.wizard.state.quizData.endTime = new Date();
+      ctx.wizard.state.quizData.timeTaken =
+        ctx.wizard.state.quizData.endTime - ctx.wizard.state.quizData.initTime;
+
+      const { quizuser, report } = await saveQuiz(ctx.wizard.state.quizData);
+      const stats = await loadStats(
+        quizuser,
+        report,
+        ctx.wizard.state.quizData
+      );
+
+      //generate html
+      const msg = await generateStatsHtml(stats);
+      ctx.replyWithHTML(msg);
+
       return ctx.wizard.next();
     } catch (err) {
       console.log(err);

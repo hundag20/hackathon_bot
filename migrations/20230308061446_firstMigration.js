@@ -28,14 +28,14 @@ exports.up = async function (knex) {
     table.string("username");
     table.integer("totalQuizsTaken");
     table.integer("totalCorrectAnswers");
-    table.integer("points").defaultTo(0);
+    table.double("points").defaultTo(0);
     table.timestamps();
   });
   return await knex.schema.createTable("quizs_users", function (table) {
     table.increments();
     table.integer("user_id");
     table.integer("quiz_id");
-    table.integer("score");
+    table.double("score");
     table.timestamps();
   });
 };
