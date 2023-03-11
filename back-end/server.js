@@ -4,28 +4,8 @@ const Stage = require("telegraf/stage");
 const session = require("telegraf/session");
 const dotenv = require("dotenv");
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-// const app = require("./App");
-const { updateGroups } = require("./controllers/owner.controller");
-const {
-  createAdController,
-  createAd_Wizard,
-} = require("./controllers/createAd.controller");
-const {
-  regGroupController,
-  regGroup_Wizard,
-} = require("./controllers/regGroup.controller");
 const { app } = require("./App");
-const { approve, disapprove } = require("./controllers/verifyPays.controller");
-const myActivePackages = require("./controllers/myActivePackages.controller");
-const selectPackage = require("./controllers/selectPackage.controller");
-const {
-  enterNewAd,
-  newAd_Wizard,
-} = require("./controllers/enterNewAd.controller");
-const { editAd, editAd_Wizard } = require("./controllers/editAd.controller");
-const viewStatus = require("./controllers/viewStatus.controller");
-const selectAd = require("./controllers/selectAd.controller");
-require("./controllers/adsPoster.controller")();
+const { takeQuiz_Wizard, takeQuiz } = require("./controllers/takeQuiz.controller.js");
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 //--setup
@@ -43,17 +23,12 @@ const bot = new Telegraf(TOKEN);
 bot.use((ctx, next) => {
   ctx.bot = bot;
   ctx.telegram = telegram;
-  if (ctx.update.my_chat_member) {
-    updateGroups([ctx.update]);
-  }
+
   return next();
 });
 
 const stage = new Stage([
-  createAd_Wizard,
-  regGroup_Wizard,
-  newAd_Wizard,
-  editAd_Wizard,
+  takeQuiz_Wizard,
 ]);
 
 bot.use(session());
@@ -65,34 +40,40 @@ bot.start((ctx) => {
   /HaveAchat
   `);
 });
-bot.command("createAd", createAdController);
-bot.command("myActivePackages", myActivePackages);
-bot.command("registerGroup", regGroupController);
-
-bot.action("approve", approve);
-bot.action("disapprove", disapprove);
-const packIdReg = new RegExp(/^[0-9].+$/);
-bot.action(packIdReg, selectPackage);
-
-const newAdReg = new RegExp(/^add_ad/);
-bot.action(newAdReg, enterNewAd);
-const editAdReg = new RegExp(/^edit_ad/);
-bot.action(editAdReg, editAd);
-const viewSatusReg = new RegExp(/^view_status/);
-bot.action(viewSatusReg, viewStatus);
-const selectAdRef = new RegExp(/^select_ad/);
-bot.action(selectAdRef, selectAd);
+bot.command("TakeAquiz", takeQuiz);
 bot.launch()
-// Enable graceful stop
-// process.once("SIGINT", () => bot.stop("SIGINT"));
-// process.once("SIGTERM", () => bot.stop("SIGTERM"));
+// const newAdReg = new RegExp(/^add_ad/);
+// bot.action(newAdReg, enterNewAd);
 
 module.exports = { bot, telegram };
+
+
+
+
+
+
+
+
+
+
+
+  // if (ctx.update.my_chat_member) {
+  //   updateGroups([ctx.update]);
+  // }
+// const packIdReg = new RegExp(/^[0-9].+$/);
+// bot.action(packIdReg, selectPackage);
+// const editAdReg = new RegExp(/^edit_ad/);
+// bot.action(editAdReg, editAd);
+// const viewSatusReg = new RegExp(/^view_status/);
+// bot.action(viewSatusReg, viewStatus);
+// const selectAdRef = new RegExp(/^select_ad/);
+// bot.action(selectAdRef, selectAd);
+// bot.launch()
 
 /*
 DONE: let owner choose group category before/after adding group
 DONE: (create field for and) calculate remaining amount of posts for an ad based on its schedule.
-      recalculate after each post
+recalculate after each post
 DONE: create differet cron-job poster functions for all types of packages (or 1 func but different args) 
 
 BUG: group update not updating group removal after program restarting
