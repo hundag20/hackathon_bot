@@ -33,14 +33,41 @@ const loadQuiz = async (userId) => {
   if (!takenQuizes || takenQuizes.length < 1) {
     //has taken no quizes
     const allQuizes = await quiz.query();
+    if (allQuizes.length < 1) throw "no quizs added";
     const firstQuiz = allQuizes[0];
     return firstQuiz;
   } else if (takenQuizes) {
+    console.log("has taken quizs");
   }
 };
 
 const loadQuestion = async (qId) => {
   return await Question.query().findById(qId);
+};
+
+const saveQuiz = async (quizData) => {
+  //find score
+  let score = 0;
+  const q1 = await Question.query().findById(quizData.quizObj.q1_id);
+  if (quizData.ans1 == q1.rightAnswer) score++;
+  const q2 = await Question.query().findById(quizData.quizObj.q2_id);
+  if (quizData.ans2 == q2.rightAnswer) score++;
+  const q3 = await Question.query().findById(quizData.quizObj.q3_id);
+  if (quizData.ans3 == q3.rightAnswer) score++;
+  const q4 = await Question.query().findById(quizData.quizObj.q4_id);
+  if (quizData.ans4 == q4.rightAnswer) score++;
+
+  //save to quizs_users
+  await QuizUser.query().insert({
+    user_id: quizData.userId,
+    quiz_id: quizData.quizObj.id,
+    score,
+  });
+  //update user points
+  const user = await User.query().where({ telid: quizData.userId });
+  await User.query().update({
+    points: user[0].points + score,
+  });
 };
 
 //MARK-- WIZARD_newAd
@@ -71,7 +98,7 @@ const takeQuiz_Wizard = new WizardScene(
         `<span class='tg-spoiler'><b>Q1. ${firstQ.question} </b></span>\n\n${ansList}`,
         Extra.HTML().markup((m) =>
           m.inlineKeyboard(
-            options.map((el, i) => m.callbackButton(letters[i], letters[i]))
+            options.map((el, i) => m.callbackButton(letters[i], i))
           )
         ),
         {
@@ -109,7 +136,7 @@ const takeQuiz_Wizard = new WizardScene(
         `<span class='tg-spoiler'><b>Q2. ${quest.question} </b></span>\n\n${ansList}`,
         Extra.HTML().markup((m) =>
           m.inlineKeyboard(
-            options.map((el, i) => m.callbackButton(letters[i], letters[i]))
+            options.map((el, i) => m.callbackButton(letters[i], i))
           )
         ),
         {
@@ -146,7 +173,7 @@ const takeQuiz_Wizard = new WizardScene(
         `<span class='tg-spoiler'><b>Q3. ${quest.question} </b></span>\n\n${ansList}`,
         Extra.HTML().markup((m) =>
           m.inlineKeyboard(
-            options.map((el, i) => m.callbackButton(letters[i], letters[i]))
+            options.map((el, i) => m.callbackButton(letters[i], i))
           )
         ),
         {
@@ -183,7 +210,7 @@ const takeQuiz_Wizard = new WizardScene(
         `<span class='tg-spoiler'><b>Q4. ${quest.question} </b></span>\n\n${ansList}`,
         Extra.HTML().markup((m) =>
           m.inlineKeyboard(
-            options.map((el, i) => m.callbackButton(letters[i], letters[i]))
+            options.map((el, i) => m.callbackButton(letters[i], i))
           )
         ),
         {
@@ -193,6 +220,18 @@ const takeQuiz_Wizard = new WizardScene(
           },
         }
       );
+      return ctx.wizard.next();
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  //E. load stats
+  async (ctx) => {
+    try {
+      const ans = ctx.update?.callback_query?.data;
+      ctx.wizard.state.quizData.ans4 = ans;
+      const quizUser = await saveQuiz(ctx.wizard.state.quizData);
+      //   const stats  = await loadStats(quizUser);
       return ctx.wizard.next();
     } catch (err) {
       console.log(err);
