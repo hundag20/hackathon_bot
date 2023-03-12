@@ -4,7 +4,8 @@ const Stage = require("telegraf/stage");
 const session = require("telegraf/session");
 const dotenv = require("dotenv");
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-const { app } = require("./App");
+const { Model } = require("./App");
+const { app } = require("./apiApp");
 const {
   takeQuiz_Wizard,
   takeQuiz,

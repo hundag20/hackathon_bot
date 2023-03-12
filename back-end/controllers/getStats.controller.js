@@ -17,6 +17,7 @@ const getStats = async (req, res, next) => {
     res.status(500).send();
   }
 };
+module.exports = getStats;
 /*
 stats to expose
 1. total num of users
