@@ -10,6 +10,7 @@ const {
   takeQuiz,
 } = require("./controllers/takeQuiz.controller.js");
 const { User } = require("./models/User.model");
+const claimPrize = require("./controllers/claimPrize.controller");
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 //--setup
@@ -38,8 +39,8 @@ bot.use(stage.middleware());
 
 const handleReferral = async (id, ctx) => {
   if (id == ctx?.from?.id) {
-    return ctx.replyWithHTML(
-      `‼️<b>you can't share quizes to your own account‼️</b>`
+    return ctx.telegram.sendMessage(id,
+      `‼️<b>you can't share quizes to your own account‼️</b>`, {parse_mode: 'HTML'}
     );
   }
   //add points for referee
@@ -52,8 +53,8 @@ const handleReferral = async (id, ctx) => {
     })
     .where({ telid: id });
   //notify referee
-  ctx.replyWithHTML(
-    `<b>you have won 2 points for sharing a quiz!🎁\n your total point is now ${points}</b>`
+  ctx.telegram.sendMessage(id,
+    `<b>you have won 2 points for sharing a quiz!🎁\n your total point is now ${points}</b>`, {parse_mode: 'HTML'}
   );
 };
 
@@ -63,13 +64,14 @@ bot.start((ctx) => {
   const payload = ctx.message.text;
   console.log("payload", payload);
   const refereeId = payload.split(" ")[1];
-  handleReferral(refereeId, ctx);
+  if(refereeId)handleReferral(refereeId, ctx);
   ctx.reply(`Welcome
   /TakeAquiz
-  /HaveAchat
+  /claimPrize
   `);
 });
 bot.command("TakeAquiz", takeQuiz);
+bot.command("claimPrize", claimPrize);
 bot.launch();
 // const newAdReg = new RegExp(/^add_ad/);
 // bot.action(newAdReg, enterNewAd);

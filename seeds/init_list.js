@@ -57,6 +57,7 @@ exports.seed = async function (knex) {
   await knex("users").truncate();
   await knex("questions").truncate();
   await knex("quizs_users").truncate();
+  await knex("coupons").truncate();
 
   //insert dummy
   await knex("quizs").insert(dummy.quizs);

@@ -31,11 +31,18 @@ exports.up = async function (knex) {
     table.double("points").defaultTo(0);
     table.timestamps();
   });
-  return await knex.schema.createTable("quizs_users", function (table) {
+  await knex.schema.createTable("quizs_users", function (table) {
     table.increments();
     table.integer("user_id");
     table.integer("quiz_id");
     table.double("score");
+    table.timestamps();
+  });
+  return await knex.schema.createTable("coupons", function (table) {
+    table.increments();
+    table.integer("user_id");
+    table.string("key");
+    table.string("status").defaultTo('unused');
     table.timestamps();
   });
 };
@@ -49,4 +56,5 @@ exports.down = async function (knex) {
   await knex.schema.dropTableIfExists("quizs");
   await knex.schema.dropTableIfExists("questions");
   await knex.schema.dropTableIfExists("quizs_users");
+  await knex.schema.dropTableIfExists("coupons");
 };
