@@ -100,9 +100,11 @@ const saveQuiz = async (quizData) => {
   });
   //update user points
   const user = await User.query().where({ telid: quizData.userId });
-  await User.query().update({
-    points: user[0].points + score,
-  });
+  await User.query()
+    .update({
+      points: user[0].points + score,
+    })
+    .where({ telid: quizData.userId });
   return { quizuser, report };
 };
 
@@ -128,7 +130,7 @@ const loadStats = async (quizuser, report, quizData) => {
   return stats;
 };
 
-const generateStatsHtml = async (stats) => {
+const generateStatsHtml = async (stats, userId) => {
   const allQuestions = await Question.query();
   //load answered quests
   let answeredQuestions = "";
@@ -142,7 +144,8 @@ const generateStatsHtml = async (stats) => {
     const quest = await Question.query().findById(qid);
     unAnsweredQuestions = unAnsweredQuestions.concat(`❌ ${quest.question}\n`);
   }
-  const msg = `👉🏿 you are the #${stats.nth} player\n👉🏿 score: ${stats.rightAndWrongs.right.length}/4\n👉🏿 Average time taken for each question: ${stats.averageSeconds}s\n🎖 ${stats.score} Points added\n\n${answeredQuestions}\n${unAnsweredQuestions}
+  const share = `https://t.me/${process.env.BOT_USERNAME}?start=${userId}`;
+  const msg = `👉🏿 you are the #${stats.nth} player\n👉🏿 score: ${stats.rightAndWrongs.right.length}/4\n👉🏿 Average time taken for each question: ${stats.averageSeconds}s\n🎖 ${stats.score} Points added\n\n${answeredQuestions}\n${unAnsweredQuestions}\n\n${share}\nShare the link to this quiz and earn points 🎁
     `;
   return msg;
 };
@@ -320,7 +323,10 @@ const takeQuiz_Wizard = new WizardScene(
       );
 
       //generate html
-      const msg = await generateStatsHtml(stats);
+      const msg = await generateStatsHtml(
+        stats,
+        ctx.wizard.state.quizData.userId
+      );
       ctx.replyWithHTML(msg);
 
       return ctx.wizard.next();

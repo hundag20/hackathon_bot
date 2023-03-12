@@ -5,7 +5,11 @@ const session = require("telegraf/session");
 const dotenv = require("dotenv");
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const { app } = require("./App");
-const { takeQuiz_Wizard, takeQuiz } = require("./controllers/takeQuiz.controller.js");
+const {
+  takeQuiz_Wizard,
+  takeQuiz,
+} = require("./controllers/takeQuiz.controller.js");
+const { User } = require("./models/User.model");
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 //--setup
@@ -27,39 +31,54 @@ bot.use((ctx, next) => {
   return next();
 });
 
-const stage = new Stage([
-  takeQuiz_Wizard,
-]);
+const stage = new Stage([takeQuiz_Wizard]);
 
 bot.use(session());
 bot.use(stage.middleware());
 
+const handleReferral = async (id, ctx) => {
+  if (id == ctx?.from?.id) {
+    return ctx.replyWithHTML(
+      `‼️<b>you can't share quizes to your own account‼️</b>`
+    );
+  }
+  //add points for referee
+  //update user points
+  const user = await User.query().where({ telid: id });
+  const points = user[0].points + 2;
+  await User.query()
+    .update({
+      points,
+    })
+    .where({ telid: id });
+  //notify referee
+  ctx.replyWithHTML(
+    `<b>you have won 2 points for sharing a quiz!🎁\n your total point is now ${points}</b>`
+  );
+};
+
 bot.start((ctx) => {
+  ctx.scene.leave(); // kill any active wizard
+
+  const payload = ctx.message.text;
+  console.log("payload", payload);
+  const refereeId = payload.split(" ")[1];
+  handleReferral(refereeId, ctx);
   ctx.reply(`Welcome
   /TakeAquiz
   /HaveAchat
   `);
 });
 bot.command("TakeAquiz", takeQuiz);
-bot.launch()
+bot.launch();
 // const newAdReg = new RegExp(/^add_ad/);
 // bot.action(newAdReg, enterNewAd);
 
 module.exports = { bot, telegram };
 
-
-
-
-
-
-
-
-
-
-
-  // if (ctx.update.my_chat_member) {
-  //   updateGroups([ctx.update]);
-  // }
+// if (ctx.update.my_chat_member) {
+//   updateGroups([ctx.update]);
+// }
 // const packIdReg = new RegExp(/^[0-9].+$/);
 // bot.action(packIdReg, selectPackage);
 // const editAdReg = new RegExp(/^edit_ad/);
