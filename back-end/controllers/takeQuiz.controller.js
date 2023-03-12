@@ -34,6 +34,8 @@ const loadQuiz = async (userId, ctx) => {
         `<b>You have taken all available quizes! stay tuned for more ☺️</b>`
       );
       return false
+    } else {
+    return allQuizes.filter(el => el.id === filteredIds[0])[0]
     }
 
   }
@@ -159,7 +161,9 @@ const takeQuiz_Wizard = new WizardScene(
       ctx.wizard.state.quizData.userId = ctx.update?.message?.from?.id;
       ctx.wizard.state.quizData.initTime = new Date();
       const quiz = await loadQuiz(ctx.wizard.state.quizData.userId, ctx);
-      if (!quiz) return ctx.scene.leave();
+      if (!quiz){ 
+        throw 'no quiz found'
+      };
       ctx.wizard.state.quizData.quizObj = quiz;
       const firstQ = await loadQuestion(quiz.q1_id);
       const keys = Object.keys(firstQ);
@@ -191,6 +195,8 @@ const takeQuiz_Wizard = new WizardScene(
       return ctx.wizard.next();
     } catch (err) {
       console.log(err);
+      return ctx.scene.leave();
+
     }
     return ctx.wizard.next();
   },

@@ -67,12 +67,12 @@ bot.start((ctx) => {
   const refereeId = payload.split(" ")[1];
   if(refereeId)handleReferral(refereeId, ctx);
   ctx.reply(`Welcome
-  /TakeAquiz
-  /claimPrize
+  /take_a_quiz
+  /claim_prize
   `);
 });
-bot.command("TakeAquiz", takeQuiz);
-bot.command("claimPrize", claimPrize);
+bot.command("take_a_quiz", takeQuiz);
+bot.command("claim_prize", claimPrize);
 bot.launch();
 // const newAdReg = new RegExp(/^add_ad/);
 // bot.action(newAdReg, enterNewAd);

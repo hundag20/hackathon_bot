@@ -13,3 +13,6 @@
 {"level":"error","message":"Sun Mar 12 2023 08:04:43 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nDBError: insert into `questions` (`ans1`, `ans2`, `ans3`, `correct`, `question`, `rightAnswer`) values ('1938', '1948', '1986', '1938', 'when was Ethiopia formed', '', '1') - Column count doesn't match value count at row 1"}
 {"level":"error","message":"Sun Mar 12 2023 08:09:29 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nmissing info in request"}
 {"level":"error","message":"Sun Mar 12 2023 08:09:51 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nmissing info in request"}
+{"level":"error","message":"Sun Mar 12 2023 08:21:47 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nmissing info in request"}
+{"level":"error","message":"Sun Mar 12 2023 08:21:48 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nmissing info in request"}
+{"level":"error","message":"Sun Mar 12 2023 08:22:04 GMT+0300 (East Africa Time) ... smth went wrong @task: addQuiz \nmissing info in request"}
