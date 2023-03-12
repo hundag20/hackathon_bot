@@ -58,4 +58,3 @@ exports.down = async function (knex) {
   await knex.schema.dropTableIfExists("quizs_users");
   await knex.schema.dropTableIfExists("coupons");
 };
-//leaderboard
