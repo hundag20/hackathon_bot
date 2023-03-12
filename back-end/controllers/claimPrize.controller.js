@@ -24,7 +24,7 @@ const claimPrize = async (ctx) => {
     coupon = await Coupon.query().insert({user_id: ctx.from?.id, key: coup[0]})
 }
    ctx.replyWithHTML(
-    `<b>Here is your coupon key <i>${coupon.key}</i> for dicounted packages from Ethio Telecom ☺️</b>`
+    `<b>Here is your coupon key —- <i>${coupon.key}</i> -— for dicounted packages from Ethio Telecom ☺️</b>`
   );
 
    }else{

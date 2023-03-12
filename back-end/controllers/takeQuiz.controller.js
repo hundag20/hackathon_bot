@@ -6,19 +6,7 @@ const { QuizUser } = require("../models/QuizUser.model");
 const QuizUserModel = require("../models/QuizUser.model");
 const { User } = require("../models/User.model");
 
-let packId = "";
-
-const pushAd = async (adObj) => {
-  await Ad.query().insert({
-    package_id: packId,
-    category: adObj.category,
-    title: adObj.text,
-    text_content: adObj.desc,
-    imgage_content: adObj.pic_id,
-  });
-};
-
-const loadQuiz = async (userId) => {
+const loadQuiz = async (userId, ctx) => {
   //check user exists and create if not
   const user = await User.query().where({ telid: userId });
   if (!user || user.length < 1) {
@@ -30,14 +18,24 @@ const loadQuiz = async (userId) => {
   const takenQuizes = await QuizUser.query().where({
     user_id: userId,
   });
+  const allQuizes = await quiz.query();
   if (!takenQuizes || takenQuizes.length < 1) {
     //has taken no quizes
-    const allQuizes = await quiz.query();
     if (allQuizes.length < 1) throw "no quizs added";
     const firstQuiz = allQuizes[0];
     return firstQuiz;
   } else if (takenQuizes) {
-    console.log("has taken quizs");
+    //user has taken quizs
+    const takenQuizesIds = takenQuizes.map(el => el.quiz_id)
+    const allQuizesIds = allQuizes.map(el => el.id)
+    const filteredIds = allQuizesIds.filter(el => !takenQuizesIds.includes(el));
+    if(!filteredIds[0]){
+      ctx.replyWithHTML(
+        `<b>You have taken all available quizes! stay tuned for more ☺️</b>`
+      );
+      return false
+    }
+
   }
 };
 
@@ -160,7 +158,8 @@ const takeQuiz_Wizard = new WizardScene(
       ctx.wizard.state.quizData = {};
       ctx.wizard.state.quizData.userId = ctx.update?.message?.from?.id;
       ctx.wizard.state.quizData.initTime = new Date();
-      const quiz = await loadQuiz(ctx.wizard.state.quizData.userId);
+      const quiz = await loadQuiz(ctx.wizard.state.quizData.userId, ctx);
+      if (!quiz) return ctx.scene.leave();
       ctx.wizard.state.quizData.quizObj = quiz;
       const firstQ = await loadQuestion(quiz.q1_id);
       const keys = Object.keys(firstQ);
@@ -329,7 +328,7 @@ const takeQuiz_Wizard = new WizardScene(
       );
       ctx.replyWithHTML(msg);
 
-      return ctx.wizard.next();
+      return ctx.scene.leave();
     } catch (err) {
       console.log(err);
     }
